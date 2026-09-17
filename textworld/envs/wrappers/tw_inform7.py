@@ -137,8 +137,11 @@ class Inform7Data(textworld.core.Wrapper):
             if self.state[info] is not None and type(self.state[info]) is not int:
                 try:
                     self.state[info] = int(self.state[info].strip())
-                except:
-                    self.state[info] = int(self.state[info].strip().split("\n")[0])
+                except (ValueError, TypeError):
+                                        # Multi-command output may contain text + multiple numbers
+                    # Extract the last number (current state after all commands)
+                    numbers = re.findall(r'\d+', str(self.state[info]))
+                    self.state[info] = int(numbers[-1]) if numbers else None
 
         self.state["won"] = '*** The End ***' in self.state["feedback"]
         self.state["lost"] = '*** You lost! ***' in self.state["feedback"]
